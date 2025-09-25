@@ -1,0 +1,72 @@
+{
+  "name": "RobloxGameCompleto",
+  "tree": {
+    "$className": "DataModel",
+    
+    "ReplicatedStorage": {
+      "$path": "src/shared"
+    },
+    
+    "ServerScriptService": {
+      "$path": "src/server"
+    },
+    
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "$path": "src/client"
+      }
+    },
+    
+    "Workspace": {
+      "$path": "src/workspace"
+    },
+    
+    "StarterGui": {
+      "$path": "src/gui"
+    },
+    
+    "ReplicatedFirst": {
+      "$path": "src/first"
+    },
+    
+    "Lighting": {
+      "$path": "src/lighting"
+    },
+    
+    "SoundService": {
+      "$path": "src/sounds"
+    },
+    
+    "TweenService": {
+      "$path": "src/tweens"
+    },
+    
+    "Players": {
+      "$path": "src/players"
+    },
+    
+    "Teams": {
+      "$path": "src/teams"
+    },
+    
+    "StarterPack": {
+      "$path": "src/tools"
+    },
+    
+    "HttpService": {
+      "$path": "src/http"
+    },
+    
+    "MarketplaceService": {
+      "$path": "src/marketplace"
+    },
+    
+    "BadgeService": {
+      "$path": "src/badges"
+    },
+    
+    "GamePassService": {
+      "$path": "src/gamepasses"
+    }
+  }
+}

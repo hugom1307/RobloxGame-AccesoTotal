@@ -1,0 +1,35 @@
+# Archivos de Roblox Studio
+*.rbxl
+*.rbxlx
+*.rbxm
+*.rbxmx
+
+# Archivos temporales de Rojo
+*.rojo_bak
+rojo.toml.bak
+
+# Archivos de Windows
+Thumbs.db
+desktop.ini
+*.tmp
+
+# Archivos de VS Code (mantener configuración base)
+.vscode/settings.json
+
+# Logs
+*.log
+
+# Archivos de backup
+*.backup
+*.bak
+
+# Mantener estructura
+!src/
+!src/**/
+src/**/*.rbxl
+src/**/*.rbxlx
+
+# Permitir archivos de configuración importantes
+!default.project.json
+!aftman.toml
+!.gitkeep
