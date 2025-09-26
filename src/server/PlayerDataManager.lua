@@ -106,6 +106,17 @@ Players.PlayerAdded:Connect(function(player)
     
     -- Cargar datos guardados
     loadPlayerData(player)
+    
+    -- Asegurar que el personaje esté cargado antes de hacer disponible los datos
+    player.CharacterAdded:Connect(function(character)
+        -- Los datos ya están listos cuando el personaje aparece
+        print("Personaje cargado para:", player.Name, "- Datos disponibles")
+    end)
+    
+    -- Si el personaje ya existe, no hay problema
+    if player.Character then
+        print("Personaje ya existe para:", player.Name, "- Datos disponibles")
+    end
 end)
 
 -- Cuando un jugador se va

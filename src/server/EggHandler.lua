@@ -8,6 +8,16 @@ local EggModels = workspace.Eggs
 
 local PlayerDebounce = {}
 
+-- Función auxiliar para obtener datos del jugador de forma segura
+function getPlayerData(Player, dataName, defaultValue)
+	if Player:FindFirstChild("Data") and Player.Data:FindFirstChild(dataName) then
+		return Player.Data[dataName].Value
+	else
+		warn("Dato no encontrado:", dataName, "para jugador:", Player.Name, "- Usando valor por defecto:", defaultValue)
+		return defaultValue
+	end
+end
+
 function ChoosePet(Egg)
 	local Data = Eggs[Egg]
 	local Pets = Data["Pets"]
@@ -27,17 +37,23 @@ end
 
 function totalPets(Player)
 	local Pets = 0
-	for i,v in pairs(Player.Pets:GetChildren()) do
-		Pets = Pets + 1
+	-- Verificar que Player.Pets existe
+	if Player:FindFirstChild("Pets") then
+		for i,v in pairs(Player.Pets:GetChildren()) do
+			Pets = Pets + 1
+		end
 	end
 	return Pets
 end
 
 function RandomID(Player)
 	local Rand = math.random(2,1000000)
-	for i,v in pairs(Player.Pets:GetChildren()) do
-		if v.PetID.Value == Rand then
-			return RandomID()
+	-- Verificar que Player.Pets existe
+	if Player:FindFirstChild("Pets") then
+		for i,v in pairs(Player.Pets:GetChildren()) do
+			if v.PetID and v.PetID.Value == Rand then
+				return RandomID(Player)
+			end
 		end
 	end
 	return Rand
@@ -68,13 +84,18 @@ function singleEgg(Player, Egg)
 	end)
 	for i,v in pairs(Pets) do
 		if v.Name == PetChosen then
-			local Clone = RS.Pets.PetFolderTemplate:Clone()
-			Clone.PetID.Value = RandomID(Player)
-			Clone.Multiplier1.Value = Settings.Multiplier1.Value
-			Clone.Multiplier2.Value = Settings.Multiplier2.Value
-			Clone.Type.Value = v.Type
-			Clone.Parent = Player.Pets
-			Clone.Name = PetChosen
+			-- Verificar que Player.Pets existe antes de añadir pet
+			if Player:FindFirstChild("Pets") then
+				local Clone = RS.Pets.PetFolderTemplate:Clone()
+				Clone.PetID.Value = RandomID(Player)
+				Clone.Multiplier1.Value = Settings.Multiplier1.Value
+				Clone.Multiplier2.Value = Settings.Multiplier2.Value
+				Clone.Type.Value = v.Type
+				Clone.Parent = Player.Pets
+				Clone.Name = PetChosen
+			else
+				warn("Player.Pets no existe para:", Player.Name)
+			end
 		end
 	end
 	return PetChosen
@@ -105,14 +126,19 @@ function tripleEgg(Player, Egg)
 		local Settings = RS.Pets.Models:FindFirstChild(PetChosen).Settings
 		for i,v in pairs(Pets) do
 			if v.Name == PetChosen then
-				local Clone = RS.Pets.PetFolderTemplate:Clone()
-				Clone.PetID.Value = RandomID(Player)
-				Clone.Multiplier1.Value = Settings.Multiplier1.Value
-				Clone.Multiplier2.Value = Settings.Multiplier2.Value
-				Clone.Type.Value = v.Type
-				Clone.Parent = Player.Pets
-				Clone.Name = PetChosen
-				PetsChosen[#PetsChosen + 1] = PetChosen
+				-- Verificar que Player.Pets existe antes de añadir pet
+				if Player:FindFirstChild("Pets") then
+					local Clone = RS.Pets.PetFolderTemplate:Clone()
+					Clone.PetID.Value = RandomID(Player)
+					Clone.Multiplier1.Value = Settings.Multiplier1.Value
+					Clone.Multiplier2.Value = Settings.Multiplier2.Value
+					Clone.Type.Value = v.Type
+					Clone.Parent = Player.Pets
+					Clone.Name = PetChosen
+					PetsChosen[#PetsChosen + 1] = PetChosen
+				else
+					warn("Player.Pets no existe para:", Player.Name)
+				end
 			end
 		end
 	end
@@ -137,7 +163,9 @@ function UnboxEgg(Player, Egg, Type)
 				if Currency ~= "R$" then
 					if Type == "Single" then
 						if Player.leaderstats:FindFirstChild(Currency).Value >= Cost then
-							if totalPets(Player) < Player.Data.MaxStorage.Value then
+							-- Verificar que Player.Data existe
+							local maxStorage = (Player:FindFirstChild("Data") and Player.Data:FindFirstChild("MaxStorage")) and Player.Data.MaxStorage.Value or 20
+							if totalPets(Player) < maxStorage then
 								local PetChosen = singleEgg(Player, Egg)
 								return PetChosen
 							else
@@ -148,8 +176,8 @@ function UnboxEgg(Player, Egg, Type)
 						end
 					elseif Type == "Triple" then
 						if Player.leaderstats:FindFirstChild(Currency).Value >= Cost * 3 then
-							if totalPets(Player) < Player.Data.MaxStorage.Value - 2 then
-								if Player.Data.TripleEggOwned.Value == true then
+							if totalPets(Player) < getPlayerData(Player, "MaxStorage", 20) - 2 then
+								if getPlayerData(Player, "TripleEggOwned", false) == true then
 									local PetsChosen = tripleEgg(Player, Egg)
 									return PetsChosen
 								else
@@ -162,11 +190,11 @@ function UnboxEgg(Player, Egg, Type)
 							return "Error", "Insufficient Currency"
 						end
 					elseif Type == "Auto" then	
-						if Player.Data.AutoEggOwned.Value == true then
-							if Player.Data.TripleEggOwned.Value == true then
+						if getPlayerData(Player, "AutoEggOwned", false) == true then
+							if getPlayerData(Player, "TripleEggOwned", false) == true then
 								if Player.leaderstats:FindFirstChild(Currency).Value >= Cost * 3 then
-									if totalPets(Player) < Player.Data.MaxStorage.Value - 2 then
-										if Player.Data.TripleEggOwned.Value == true then
+									if totalPets(Player) < getPlayerData(Player, "MaxStorage", 20) - 2 then
+										if getPlayerData(Player, "TripleEggOwned", false) == true then
 											local PetsChosen = tripleEgg(Player, Egg)
 											return PetsChosen
 										else
@@ -180,7 +208,7 @@ function UnboxEgg(Player, Egg, Type)
 								end
 							else
 								if Player.leaderstats:FindFirstChild(Currency).Value >= Cost then
-									if totalPets(Player) < Player.Data.MaxStorage.Value then
+									if totalPets(Player) < getPlayerData(Player, "MaxStorage", 20) then
 										local PetChosen = singleEgg(Player, Egg)
 										return PetChosen
 									else
@@ -195,7 +223,7 @@ function UnboxEgg(Player, Egg, Type)
 						end
 					end
 				else
-					if totalPets(Player) < Player.Data.MaxStorage.Value then
+					if totalPets(Player) < getPlayerData(Player, "MaxStorage", 20) then
 						return "Error", "Robux Purchase"
 					else
 						return "Error", "Not Enough Inventory Room"
