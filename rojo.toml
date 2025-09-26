@@ -1,0 +1,11 @@
+[project]
+name = "RobloxGameCompleto"
+serve_port = 34872
+
+[serve]
+sync_rules = [
+  {
+    src = "src",
+    dest = ".",
+  }
+]
