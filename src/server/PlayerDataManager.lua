@@ -102,21 +102,47 @@ Players.PlayerAdded:Connect(function(player)
     createPlayerData(player)
     
     -- Esperar un poco para asegurar que la estructura esté creada
-    wait(1)
+    wait(0.5)
     
     -- Cargar datos guardados
     loadPlayerData(player)
     
+    -- Crear un RemoteEvent para sincronizar datos al cliente si no existe
+    local remoteEvents = game.ReplicatedStorage:FindFirstChild("RemoteEvents")
+    if not remoteEvents then
+        remoteEvents = Instance.new("Folder")
+        remoteEvents.Name = "RemoteEvents"
+        remoteEvents.Parent = game.ReplicatedStorage
+    end
+    
+    local dataReadyEvent = remoteEvents:FindFirstChild("PlayerDataReady")
+    if not dataReadyEvent then
+        dataReadyEvent = Instance.new("RemoteEvent")
+        dataReadyEvent.Name = "PlayerDataReady"
+        dataReadyEvent.Parent = remoteEvents
+    end
+    
+    -- Notificar al cliente que los datos están listos
+    wait(1) -- Asegurar que todo esté sincronizado
+    dataReadyEvent:FireClient(player, {
+        MaxStorage = player.Data.MaxStorage.Value,
+        TripleEggOwned = player.Data.TripleEggOwned.Value,
+        AutoEggOwned = player.Data.AutoEggOwned.Value
+    })
+    
+    print("Datos enviados al cliente para:", player.Name)
+    
     -- Asegurar que el personaje esté cargado antes de hacer disponible los datos
     player.CharacterAdded:Connect(function(character)
-        -- Los datos ya están listos cuando el personaje aparece
-        print("Personaje cargado para:", player.Name, "- Datos disponibles")
+        -- Reenviar datos cuando el personaje reaparezca
+        wait(2)
+        dataReadyEvent:FireClient(player, {
+            MaxStorage = player.Data.MaxStorage.Value,
+            TripleEggOwned = player.Data.TripleEggOwned.Value,
+            AutoEggOwned = player.Data.AutoEggOwned.Value
+        })
+        print("Personaje cargado para:", player.Name, "- Datos reenviados")
     end)
-    
-    -- Si el personaje ya existe, no hay problema
-    if player.Character then
-        print("Personaje ya existe para:", player.Name, "- Datos disponibles")
-    end
 end)
 
 -- Cuando un jugador se va
